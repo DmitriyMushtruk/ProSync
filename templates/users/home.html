@@ -1,0 +1,11 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Login Page{% endblock %}
+
+{% block content %}
+    {% csrf_token %}
+    <h2>Hello there!</h2>
+    <a href="/users/login/" style="color: #CCDDE2">Login</a>
+    <a href="/users/register/" style="color: #CCDDE2">Registration</a>
+{% endblock %}

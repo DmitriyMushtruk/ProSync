@@ -1,0 +1,169 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Login Page{% endblock %}
+
+{% block content %}
+
+<section class="text-center text-lg-start">
+    <style>
+        .cascading-right {
+            margin-right: -50px;
+        }
+
+        @media (max-width: 950px) {
+            .cascading-right {
+                margin-right: 0;
+            }
+        }
+
+        #alerts-container {
+            position: fixed;
+            top: 8vh;
+            right: 1vw;
+            z-index: 1050;
+            max-width: 300px;
+            width: 100%;
+            margin-right: 0;
+        }
+    </style>
+
+    {% if form.errors %}
+        <div id="alerts-container">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <div class="alert alert-danger alert-dismissible fade show mb-2" role="alert" id="error-{{ forloop.counter }}" style="position: relative;">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        {{ error }}
+                        <div class="progress" role="progressbar" style="position: absolute; bottom: 0; left: 0; right: 0; height: 7px; margin: 0;">
+                            <div id="progress-bar-{{ forloop.counter }}" class="progress-bar bg-danger progress-bar-animated" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="container">
+        <div class="row g-0 align-items-center">
+            <div class="col-6 mb-5 mb-lg-0">
+                <div class="card cascading-right bg-body-tertiary bg-dark" style="backdrop-filter: blur(30px);">
+                    <div class="card-body p-5 shadow-5 text-center">
+                        <h2 class="fw-bold mb-3">Let's get you started!</h2>
+
+                        <form method="POST" action="{% url 'users:register' %}">
+                            {% csrf_token %}
+
+                            <div class="form-floating mb-3" style="color: var(--dark)">
+                                {{ form.username|add_class:"form-control w-100"|attr:"placeholder:Enter your username"|attr:"id:username" }}
+                                <label for="username">Username</label>
+                            </div>
+
+                            <div class="row mb-3" style="color: var(--dark)">
+                                <div class="col-6">
+                                    <div class="form-floating">
+                                        {{ form.first_name|add_class:"form-control w-100"|attr:"placeholder:Enter your first name"|attr:"id:first_name" }}
+                                        <label for="first_name">First Name</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-floating">
+                                        {{ form.last_name|add_class:"form-control w-100"|attr:"placeholder:Enter your last name"|attr:"id:last_name" }}
+                                        <label for="last_name">Last Name</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-floating mb-3" style="color: var(--dark)">
+                                {{ form.email|add_class:"form-control w-100"|attr:"placeholder:Enter your first name"|attr:"id:email" }}
+                                <label for="email">E-Mail</label>
+                            </div>
+
+                            <div class="row mb-3" style="color: var(--dark)">
+                                <div class="col-6">
+                                    <div class="form-floating mb-3" style="color: var(--dark)">
+                                        {{ form.password1|add_class:"form-control w-100"|attr:"placeholder:Enter your password"|attr:"id:password1" }}
+                                        <label for="password1">Password</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                     <div class="form-floating mb-3" style="color: var(--dark)">
+                                        {{ form.password2|add_class:"form-control w-100"|attr:"placeholder:Enter your password"|attr:"id:password2" }}
+                                        <label for="password2">Password confirmation</label>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <button type="submit" class="btn btn-primary w-100" style="background-color: #DD6E42; border-color: #DD6E42">Sign me up!</button>
+
+                            <div class="d-flex flex-column align-items-center justify-content-center text-center">
+                                <p class="mb-2 mt-2">Already have an account?
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+                                        <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"></path>
+                                    </svg>
+
+                                    <a href="/users/login/" style="color: #CCDDE2">Login</a>
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">
+                                        <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"></path>
+                                    </svg>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 mb-5 mb-lg-0">
+                <img src="{% static 'register.jpg' %}" class="rounded-4 shadow-4" alt="img" style="max-height: 86vh; border-radius: 0 30% 30% 0;  border-right: 5px solid var(--orange);"/>
+            </div>
+        </div>
+    </div>
+    </section>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const alerts = document.querySelectorAll('.alert');
+            const intervalDuration = 1000;
+            const progressDuration = 5000;
+
+            if (alerts.length > 0) {
+                let alertIndex = 0;
+
+                function animateProgressBar(alert, progressBar) {
+                    let progress = 100;
+
+                    const progressInterval = setInterval(function () {
+                        progress -= 2;
+                        progressBar.style.width = progress + '%';
+
+                        if (progress <= 0) {
+                            clearInterval(progressInterval);
+                            alert.classList.remove('show');
+                            alert.classList.add('fade');
+                        }
+                    }, progressDuration / 50);
+                }
+
+                const alertInterval = setInterval(function () {
+                    if (alertIndex < alerts.length) {
+                        const alert = alerts[alertIndex];
+                        const progressBar = alert.querySelector('.progress-bar');
+
+                        alert.classList.add('show');
+
+                        animateProgressBar(alert, progressBar);
+
+                        alertIndex++;
+                    } else {
+                        clearInterval(alertInterval);
+                    }
+                }, intervalDuration);
+            }
+        });
+    </script>
+{% endblock %}
+
