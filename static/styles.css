@@ -3,6 +3,9 @@
     --light: #CCDDE2;
     --dark: #343A40;
     --lighter-dark: hsl(210, 7%, 19%);
+    --red: #c34a36;
+    --green: #008b74;
+    --black: #212529;
 }
 
 body {
@@ -13,7 +16,5 @@ body {
 }
 
 button {
-    background-color: #DD6E42;
-    color: #DD6E42;
     background: #DD6E42;
 }

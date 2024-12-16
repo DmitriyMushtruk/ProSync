@@ -1,0 +1,377 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Main{% endblock %}
+
+{% block content %}
+    {% csrf_token %}
+
+    <style>
+        * {
+            box-sizing: content-box;
+        }
+
+        .sidebar-link {
+            background-color: #343A40;
+            border-color: #343A40;
+            color: #CCDDE2;
+            margin-bottom: 1vh;
+        }
+
+        i {
+            margin-right: 30px;
+        }
+
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #DD6E42;
+        }
+
+        .member-name {
+            font-size: 1rem;
+            color: #CCDDE2;
+            font-weight: 500;
+        }
+
+        .member-role {
+            font-size: 0.9rem;
+            color: #DD6E42;
+            font-weight: 400;
+        }
+
+        .member-status {
+            font-size: 0.8rem;
+            color: #CCDDE2;
+            background-color: #343A40;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .team-member-link {
+            color: inherit;
+            transition: background-color 0.3s ease;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .team-member-link:hover {
+            background-color: #DD6E42;
+            color: #343A40;
+        }
+
+        ul.list-unstyled::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ul.list-unstyled::-webkit-scrollbar-thumb {
+            background-color: #DD6E42;
+            border-radius: 4px;
+        }
+
+        ul.list-unstyled::-webkit-scrollbar-thumb:hover {
+            background-color: #CC5A35;
+        }
+
+        ul.list-unstyled::-webkit-scrollbar-track {
+            background-color: #343A40;
+        }
+
+        .list-group-item {
+            background-color: #212529;
+            color: #CCDDE2;
+        }
+
+        .avatar {
+            border: #343A40 7px solid;
+        }
+
+        .avatar-p {
+            background-color: #343A40;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .status-circle {
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+        }
+
+        .status-active {
+            background-color: green;
+        }
+        .status-completed {
+            background-color: red;
+        }
+        .status-archived {
+            background-color: yellow;
+        }
+        .status-default {
+            background-color: gray;
+        }
+
+        .btn-common {
+            color: #DD6E42;
+            border-color: #DD6E42;
+        }
+
+        .btn-common:hover {
+            background-color: #DD6E42;
+            color: #CCDDE2;
+            border-color: #DD6E42;
+        }
+
+        .btn-okay {
+            color: #008b74;
+            border-color: #008b74;
+        }
+
+        .btn-okay:hover {
+            background-color: #008b74;
+            color: #CCDDE2;
+            border-color: #008b74;
+        }
+
+        .btn-fail {
+            color: #c34a36;
+            border-color: #c34a36;
+        }
+
+        .btn-fail:hover {
+            background-color: #c34a36;
+            color: #CCDDE2;
+            border-color: #c34a36;
+        }
+
+        #createTaskModal .modal-dialog {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        #createTaskModal .form-control {
+            width: 100%;
+        }
+
+        #createTaskModal .modal-footer button {
+            width: auto;
+        }
+
+        .fi {
+            max-width: 30vw;
+        }
+    </style>
+
+    <section class="text-center text-lg-start" style="max-height: 83vh;">
+        <div class="container d-flex align-items-center px-0"  style="height: 83vh; padding-top: 3vh">
+            <div class="row w-100 h-100 d-flex flex-column justify-content-start align-items-center" style="flex: 1; ">
+
+                <div class="col-auto bg-dark d-flex flex-column py-3" style="max-height: 27vh; min-width: 10vw; border-radius: 10px">
+                    <img class="avatar" src="{% static 'Login.jpg' %}" alt="" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin: 0 auto;">
+
+                    <div class="text-center mt-2 avatar-p rounded py-1">
+                        <p class="m-0">{{ request.user.username }}</p>
+                        <small class="m-0">Activity: 13.6h</small>
+                    </div>
+                </div>
+
+                <div class="col-auto bg-dark d-flex flex-column py-3 mt-3" style="max-height: 86vh; min-width: 10vw; border-radius: 10px">
+                    <a href="{% url 'projects:main' project.id %}" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-house-fill"></i>Main</a>
+                    <a href="{% url 'projects:backlog' project.id %}" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-list-columns-reverse"></i>Backlog</a>
+                    <a href="#" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-kanban-fill"></i>Board</a>
+                    <a href="#" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-chat-dots-fill"></i>Chat</a>
+                    <a href="#" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-pie-chart-fill"></i>Charts</a>
+                    <a href="#" class="sidebar-link btn btn-secondary text-start mb-0"><i class="bi bi-gear-fill"></i> Settings</a>
+                </div>
+
+                <div class="card col-3 bg-dark rounded p-0">
+                    <div class="card-body bg-dark">
+                        <h5 class="card-title">{{ project.name }}</h5>
+
+                        <h6 class="card-subtitle mb-2 text-body-secondary">Status: {{ project.status }}
+                            <span class="status-circle ms-1
+                                {% if project.status == 'active' %}status-active
+                                {% elif project.status == 'completed' %}status-completed
+                                {% elif project.status == 'archived' %}status-archived
+                                {% else %}status-default{% endif %}">
+                            </span>
+                        </h6>
+
+                        <p class="card-text">{{ project.description }}</p>
+
+                        <div>
+                            <p class="m-0">Owner: {{ project.owner.avatar }} {{ project.owner.username }}</p>
+                            <p class="m-0">Start: {{ project.start_date | date:"d.m.Y" }}</p>
+                            <p class="m-0">Members: {{ members | length }}</p>
+                            <p class="m-0">Tasks count: {{ tasks | length }}</p>
+                            <p class="m-0">Progress: 45%</p>
+                            <p class="m-0">Time spent: 14h</p>
+                        </div>
+
+                        <div class="d-flex flex-column justify-content-around">
+                            <a href="#"
+                               class="btn-common btn-lg btn btn-outline-primary my-3"
+                               data-bs-toggle="modal" data-bs-target="#createTaskModal"
+                            >
+                                <i class="bi bi-plus-square-fill m-0 me-2"></i>
+                                Create task
+                            </a>
+
+                            <a href="#" class="btn-okay btn-lg btn btn-outline-primary mb-3">
+                                <i class="bi bi-person-fill-add m-0 me-2"></i>
+                                Add member
+                            </a>
+
+                            <a href="#" class="btn-fail btn-lg btn btn-outline-primary">
+                                <i class="bi bi-x-circle-fill m-0 me-2"></i>
+                                Leave project
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6">
+
+                    <div class="row " style="height: 46vh">
+                        <div class="col bg-dark p-3 rounded" >
+                            <h5>Tree</h5>
+                            <p>Description: {{ project.description }}</p>
+                            <p>Description: {{ project.description }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3" style="height: 32vh; box-sizing: content-box; overflow: hidden">
+                        <div class="col bg-dark p-3 pb-0 rounded">
+                            <h5>Team</h5>
+                            <ul class="list-unstyled" style="max-height: 25vh; overflow-y: auto;">
+                                {% for member in members %}
+                                    <li>
+                                        <a href="#" class="team-member-link d-flex align-items-center justify-content-between text-decoration-none me-3">
+                                            <div class="d-flex align-items-center">
+                                                <img src="{% static 'Login.jpg' %}" alt="#" class="member-avatar me-2">
+                                                <span class="member-name">{{ member.user }}</span>
+                                            </div>
+                                            <div class="text-end pe-3">
+                                                <span class="member-role">{{ member.role }}</span>
+                                                <span class="member-status ms-2">online</span>
+                                            </div>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content bg-dark text-light">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <form id="createTaskForm" method="POST" action="{% url 'projects:create-task' project_id=project.id %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="taskTitle" class="form-label col-sm-2">Title</label>
+                                <input type="text" class="form-control" id="taskTitle" name="title" required style="box-sizing: border-box">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="taskDescription" class="form-label col-sm-2">Description</label>
+                                <textarea class="form-control" id="taskDescription" name="description" rows="3" style="box-sizing: border-box"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="taskStatus" class="form-label">Status</label>
+                                <select class="form-select" id="taskStatus" name="status" style="box-sizing: border-box">
+                                {% for value, label in status_choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="taskPriority" class="form-label">Priority</label>
+                                <select class="form-select" id="taskPriority" name="priority" style="box-sizing: border-box">
+                                {% for value, label in priority_choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                                </select>
+                            </div>
+
+                           <div class="mb-3">
+                                <label for="taskEstimate" class="form-label">Original Estimate</label>
+                                <div id="timeEstimateControls" class="d-flex align-items-center">
+                                    <div class="btn-group me-2">
+                                        <button type="button" class="btn btn-outline-secondary btn-common" id="addOneHour">+1h</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-common" id="addFiveMinutes">+5m</button>
+                                    </div>
+                                    <input type="text" class="form-control" id="taskEstimate" name="original_estimate" value="0h 5m" readonly>
+                                    <button type="button" class="btn btn-outline-danger ms-2 btn-fail" id="clearTime">Clear</button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save Task</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let totalHours = 0;
+            let totalMinutes = 5;
+
+            const addOneHourButton = document.getElementById('addOneHour');
+            const addFiveMinutesButton = document.getElementById('addFiveMinutes');
+            const clearButton = document.getElementById('clearTime');
+            const timeInputField = document.getElementById('taskEstimate');
+
+            function updateTime() {
+                totalHours += Math.floor(totalMinutes / 60);
+                totalMinutes = totalMinutes % 60;
+
+                let timeString = `${totalHours}h ${totalMinutes}m`;
+
+                timeInputField.value = timeString;
+            }
+
+            addOneHourButton.addEventListener('click', function() {
+                totalHours += 1;
+                updateTime();
+            });
+
+            addFiveMinutesButton.addEventListener('click', function() {
+                totalMinutes += 5;
+                updateTime();
+            });
+
+            clearButton.addEventListener('click', function() {
+                totalHours = 0;
+                totalMinutes = 5;
+                updateTime();
+            });
+        });
+    </script>
+{% endblock %}
