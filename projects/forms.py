@@ -53,3 +53,9 @@ class TaskForm(forms.ModelForm):
             raise forms.ValidationError("Minutes must be an integer.")
 
         return hours + (minutes / 60)
+
+
+class TaskUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ['title', 'description', 'status', 'priority', 'user']

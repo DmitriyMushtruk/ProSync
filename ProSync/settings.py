@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from channels.routing import ProtocolTypeRouter
+from django.core.asgi import get_asgi_application
 
 load_dotenv()
 
@@ -23,11 +25,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
     'bootstrap5',
     'widget_tweaks',
     'users',
-    'projects'
+    'projects',
+    'chats',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -59,8 +64,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'ProSync.wsgi.application'
-
 AUTH_USER_MODEL = 'users.User'
 
 # Database
@@ -73,6 +76,27 @@ DATABASES = {
         'HOST': os.getenv('DB_HOST'),
         'PORT': os.getenv('DB_PORT'),
     }
+}
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProSync.settings")
+
+WSGI_APPLICATION = 'ProSync.wsgi.application'
+ASGI_APPLICATION = 'ProSync.asgi.application'
+
+django_asgi_app = get_asgi_application()
+
+application = ProtocolTypeRouter({
+    "http": django_asgi_app,
+    # Just HTTP for now. (We can add other protocols later.)
+})
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",  # For dev
+        # For prod - Redis:
+        # "BACKEND": "channels_redis.core.RedisChannelLayer",
+        # "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
+    },
 }
 
 
@@ -96,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Warsaw'
 
 USE_I18N = True
 
@@ -110,5 +134,13 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+# Users files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+LOGIN_REDIRECT_URL = 'start'
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"

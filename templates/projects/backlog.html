@@ -7,27 +7,9 @@
     {% csrf_token %}
 
     <style>
-    * {
-        box-sizing: content-box;
-    }
-
-    .sidebar-link {
-        background-color: #343A40;
-        border-color: #343A40;
-        color: #CCDDE2;
-        margin-bottom: 1vh;
-    }
 
     i {
             margin-right: 30px;
-    }
-
-    .avatar {
-        border: #343A40 7px solid;
-    }
-
-    .avatar-p {
-        background-color: #343A40;
     }
 
     ul.list-unstyled::-webkit-scrollbar {
@@ -76,7 +58,6 @@
     .visible {
         visibility: visible;
         opacity: 1;
-        transition: opacity 0.3s ease;
     }
 
     li.task-item.active {
@@ -104,92 +85,84 @@
 
     }
 
+    .task-detail-log {
+        display: flex;
+        flex-direction: column;
+        height: 30%;
+    }
+
+    .activity-log-container {
+        flex-grow: 1;
+        overflow-y: scroll;
+        max-height: 100%;
+    }
+
+    .activity-log-container::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
+    }
+
     </style>
+        <div class="col-5 bg-dark rounded p-3" style="height: 76vh;">
+            <form method="get" class="backlog-form d-flex justify-content-start mb-3">
+                <select class="form-select form-select-sm me-3" name="status" id="select-status">
+                    <option value="" {% if not current_status %}selected{% endif %}>All statuses</option>
+                    <option value="in progress" {% if current_status == "in progress" %}selected{% endif %}>In progress</option>
+                    <option value="to do" {% if current_status == "to do" %}selected{% endif %}>To do</option>
+                    <option value="on hold" {% if current_status == "on hold" %}selected{% endif %}>On hold</option>
+                    <option value="done" {% if current_status == "done" %}selected{% endif %}>Done</option>
+                </select>
 
-    <section class="text-center text-lg-start" style="max-height: 83vh;">
-        <div class="container d-flex align-items-center px-0"  style="height: 83vh; padding-top: 3vh">
-            <div class="row w-100 h-100 d-flex flex-column justify-content-start align-items-center" style="flex: 1; ">
+                <select class="form-select form-select-sm me-3" name="priority" id="select-priority">
+                    <option value="" {% if not current_priority %}selected{% endif %}>All priorities</option>
+                    <option value="trivial" {% if current_priority == "trivial" %}selected{% endif %}>Trivial</option>
+                    <option value="low" {% if current_priority == "low" %}selected{% endif %}>Low</option>
+                    <option value="medium" {% if current_priority == "medium" %}selected{% endif %}>Medium</option>
+                    <option value="high" {% if current_priority == "high" %}selected{% endif %}>High</option>
+                </select>
 
-                <div class="col-auto bg-dark d-flex flex-column py-3" style="max-height: 27vh; min-width: 10vw; border-radius: 10px">
-                    <img class="avatar" src="{% static 'Login.jpg' %}" alt="" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin: 0 auto;">
-
-                    <div class="text-center mt-2 avatar-p rounded py-1">
-                        <p class="m-0">{{ request.user.username }}</p>
-                        <small class="m-0">Activity: 13.6h</small>
-                    </div>
-                </div>
-
-                <div class="col-auto bg-dark d-flex flex-column py-3 mt-3" style="max-height: 86vh; min-width: 10vw; border-radius: 10px">
-                    <a href="{% url 'projects:main' project.id %}" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-house-fill"></i>Main</a>
-                    <a href="#" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-list-columns-reverse"></i>Backlog</a>
-                    <a href="#" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-kanban-fill"></i>Board</a>
-                    <a href="#" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-chat-dots-fill"></i>Chat</a>
-                    <a href="#" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-pie-chart-fill"></i>Charts</a>
-                    <a href="#" class="sidebar-link btn btn-secondary text-start mb-0"><i class="bi bi-gear-fill"></i> Settings</a>
-                </div>
-
-                <div class="col-5 bg-dark rounded p-3" style="height: 76vh;">
-                    <form method="get" class="backlog-form d-flex justify-content-start mb-3">
-                        <select class="form-select form-select-sm me-3" name="status" id="select-status">
-                            <option value="" {% if not current_status %}selected{% endif %}>All statuses</option>
-                            <option value="in progress" {% if current_status == "in progress" %}selected{% endif %}>In progress</option>
-                            <option value="to do" {% if current_status == "to do" %}selected{% endif %}>To do</option>
-                            <option value="on hold" {% if current_status == "on hold" %}selected{% endif %}>On hold</option>
-                            <option value="done" {% if current_status == "done" %}selected{% endif %}>Done</option>
-                        </select>
-
-                        <select class="form-select form-select-sm me-3" name="priority" id="select-priority">
-                            <option value="" {% if not current_priority %}selected{% endif %}>All priorities</option>
-                            <option value="trivial" {% if current_priority == "trivial" %}selected{% endif %}>Trivial</option>
-                            <option value="low" {% if current_priority == "low" %}selected{% endif %}>Low</option>
-                            <option value="medium" {% if current_priority == "medium" %}selected{% endif %}>Medium</option>
-                            <option value="high" {% if current_priority == "high" %}selected{% endif %}>High</option>
-                        </select>
-
-                        <select class="form-select form-select-sm" name="user" id="select-user">
-                            <option value="" {% if not current_user %}selected{% endif %}>All members</option>
-                            {% for member in members %}
-                                <option value="{{ member.user }}" {% if current_user == member.user.username %}selected{% endif %}>
-                                    {{ member.user }}
-                                </option>
-                            {% endfor %}
-                        </select>
-
-                        <button type="submit" class="btn filter-button btn-sm ms-auto">
-                            <i class="bi bi-funnel-fill m-0 me-2"></i>Filter
-                        </button>
-                    </form>
-
-                    <hr>
-
-                    <ul class="list-group list-unstyled" style="max-height: 63vh; overflow-y: auto;">
-                    {% for task in tasks %}
-                        <li class="task-item list-group-item d-flex align-items-center justify-content-between mb-2 mx-2 rounded"
-                            id="task-{{ task.id }}"
-                            style="cursor: pointer;"
-                            data-task-id="{{ task.id }}" onclick="selectTask(this)"
-                        >
-
-                            <div class="d-flex align-items-center">
-                                <div>
-                                    <strong>{{ task.title }}</strong>
-                                    <div class="text-muted small">Assigned to: {{ task.user }}</div>
-                                </div>
-                            </div>
-
-                            <div class="text-end">
-                                <div class="task-status text-uppercase">{{ task.status }}</div>
-                                <div class="task-priority text-muted small text-uppercase">Priority: {{ task.priority }}</div>
-                            </div>
-                        </li>
+                <select class="form-select form-select-sm" name="user" id="select-user">
+                    <option value="" {% if not current_user %}selected{% endif %}>All members</option>
+                    {% for member in members %}
+                        <option value="{{ member.user }}" {% if current_user == member.user.username %}selected{% endif %}>
+                            {{ member.user }}
+                        </option>
                     {% endfor %}
-                    </ul>
-                </div>
+                </select>
 
-                <div id="task-detail" class="col-4 bg-dark rounded hidden p-3" style="height: 76vh;">
-                        <!-- Task details will be dynamically inserted here -->
-                </div>
-            </div>
+                <button type="submit" class="btn filter-button btn-sm ms-auto">
+                    <i class="bi bi-funnel-fill m-0 me-2"></i>Filter
+                </button>
+            </form>
+
+            <hr>
+
+            <ul class="list-group list-unstyled" style="max-height: 67vh; overflow-y: auto;">
+            {% for task in tasks %}
+                <li class="task-item list-group-item d-flex align-items-center justify-content-between mb-2 me-2 rounded"
+                    id="task-{{ task.id }}"
+                    style="cursor: pointer;"
+                    data-task-id="{{ task.id }}" onclick="selectTask(this)"
+                >
+
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <strong>{{ task.title }}</strong>
+                            <div class="text-muted small">Assigned to: {{ task.user }}</div>
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <div class="task-status text-uppercase">{{ task.status }}</div>
+                        <div class="task-priority text-muted small text-uppercase">Priority: {{ task.priority }}</div>
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+
+        <div id="task-detail" class="col-4 bg-dark rounded hidden" style="height: 80vh;">
+                <!-- Task details will be dynamically inserted here -->
         </div>
 
         <div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskLabel" aria-hidden="true">
@@ -206,10 +179,109 @@
                 </div>
             </div>
         </div>
-    </section>
 
+        <div class="modal fade" id="commentTaskModal" tabindex="-1" aria-labelledby="commentTaskLabel" aria-hidden="true">
+            <div class="modal-dialog" style="color: #CCDDE2">
+                <div class="modal-content bg-dark" style="width: 80%;">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="commentTaskLabel">Add Comment</h5>
+                    </div>
+                    <div class="modal-body d-flex flex-column" style="width: 85%;">
+                        <form id="commentForm">
+                            <div class="mb-3">
+                                <textarea
+                                    class="form-control"
+                                    id="commentDescription"
+                                    name="description"
+                                    rows="4"
+                                    placeholder="Write your comment..."
+                                    required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="updateTaskModal" tabindex="-1" aria-labelledby="updateTaskLabel" aria-hidden="true">
+            <div class="modal-dialog" style="color: #CCDDE2">
+                <div class="modal-content bg-dark" style="width: 80%;">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="updateTaskLabel">Update Task</h5>
+                    </div>
+
+                    <div class="modal-body">
+                        <form id="updateTaskForm">
+                            <div class="mb-3">
+                                <label for="taskTitle" class="form-label">Title</label>
+                                <input type="text" class="form-control px-0 py-2" id="taskTitle" name="title" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="taskDescription" class="form-label">Description</label>
+                                <textarea class="form-control px-0 py-2" id="taskDescription" name="description" required></textarea>
+                            </div>
+
+                            <div class="d-flex flex-column justify-content-around align-items-start">
+                                <div class="mb-3">
+                                    <label for="taskStatus" class="form-label">Status</label>
+                                    <select class="form-select" id="taskStatus" name="status" required style="min-width: 15vw">
+                                        <option value="in progress">In Progress</option>
+                                        <option value="to do">To Do</option>
+                                        <option value="on hold">On Hold</option>
+                                        <option value="done">Done</option>
+                                        <option value="backlog">Backlog</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="taskPriority" class="form-label">Priority</label>
+                                    <select class="form-select" id="taskPriority" name="priority" required style="min-width: 15vw">
+                                        <option value="trivial">Trivial</option>
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="taskUser" class="form-label">Assignee</label>
+                                    <select class="form-select" name="user" id="taskUser" style="min-width: 15vw">
+                                        {% for member in members %}
+                                            <option value="{{ member.user }}" {% if current_user == member.user.username %}selected{% endif %}>
+                                                {{ member.user }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-backspace-fill me-2"></i>Back</button>
+                        <button type="button" id="confirmUpdateBtn" class="btn btn-success"><i class="bi bi-check-circle-fill me-2"></i>Update Task</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     <script>
+
     let activeTask = null;
+
+    window.addEventListener('load', function() {
+        var storedActiveTask = localStorage.getItem('activeTask');
+        if (storedActiveTask) {
+            activeTask = storedActiveTask;
+            console.log("Active Task from LocalStorage:", storedActiveTask);
+
+            const activeTaskElement = document.querySelector(`[data-task-id="${activeTask}"]`);
+            if (activeTaskElement) {
+                activeTaskElement.classList.add('active');
+                selectTask(activeTaskElement);
+            }
+        } else {
+            activeTask = null;
+        }
+    });
 
     function selectTask(element) {
         const taskId = element.dataset.taskId;
@@ -221,10 +293,23 @@
             .then(response => response.json())
             .then(data => {
                 const taskDetail = document.getElementById('task-detail');
+                const activityLog = data.comments_and_history.map(entry => `
+                    <div class="entry ps-2 py-1 mb-3 rounded" style="background-color: #343A40">
+                        <div>
+                            <strong>${entry.user}</strong>:
+                            <span>${entry.description}</span>
+                        </div>
+
+                        <div>
+                            <small class="text-muted">${entry.timestamp}</small>
+                        </div>
+                    </div>
+                `).join('');
+
                 taskDetail.innerHTML = `
                     <div class="d-flex flex-column" style="height: 100%;">
                         <div class="task-detail-header">
-                            <div class="task-detail-header d-flex align-items-center mb-2">
+                            <div class="task-detail-header d-flex align-items-center my-2">
                                 <h4 class="w-100 m-0">${data.title}</h4>
                             </div>
                             <p>${data.description}</p>
@@ -248,16 +333,24 @@
                             </div>
                         </div>
 
-                        <div class="task-detail-log mb-3 rounded flex-grow-1 " style="background-color: #343A40">
-                            <h4>Here will be task log.</h4>
-                            <h5>Information about previous steps and general history of tasks.</h5>
-                            <h4>${data.id}</h4>
+                        <div class="task-detail-log mb-3 rounded flex-grow-1 " style="background-color: #343A40;">
+                            <div class="card-task-detail card position-relative rounded h-100">
+                                <span class="card-label">Activity</span>
+                                <div class="card-body small list-unstyled activity-log-container">
+                                    ${activityLog}
+                                </div>
+                            </div>
                         </div>
 
-                         <div class="task-manager mt-auto">
-                            <button type="button" class="btn btn-success float-start">
+                         <div class="task-manager mt-auto mb-3">
+                            <button type="button" id="updateTaskBtn" data-bs-toggle="modal" data-bs-target="#updateTaskModal" class="btn btn-primary float-start">
                                 <i class="bi bi-pen-fill me-2"></i>Edit
                             </button>
+
+                            <button type="button" id="commentTaskBtn" data-bs-toggle="modal" data-bs-target="#commentTaskModal" class="btn btn-secondary float-start ms-3">
+                                <i class="bi bi-chat-text-fill me-2"></i>Comment
+                            </button>
+
                             <button type="button" id="deleteTaskBtn" class="btn btn-danger float-end" data-task-id="${data.id}">
                                 <i class="bi bi-trash-fill me-2"></i>Delete
                             </button>
@@ -277,7 +370,26 @@
             });
 
         activeTask = taskId;
+        localStorage.setItem('activeTask', taskId);
     }
+
+    document.getElementById('updateTaskModal').addEventListener('show.bs.modal', function () {
+        if (activeTask) {
+            fetch(`/projects/task-detail/${activeTask}/`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('taskTitle').value = data.title;
+                    document.getElementById('taskDescription').value = data.description;
+                    document.getElementById('taskStatus').value = data.status;
+                    document.getElementById('taskPriority').value = data.priority;
+                    const taskUserSelect = document.getElementById('taskUser');
+                    taskUserSelect.value = data.user.username;
+                })
+                .catch(error => {
+                    console.error('Error fetching task details:', error);
+                });
+        }
+    });
 
     function deleteTask(taskId) {
         fetch(`/projects/task-delete/${taskId}/`, {
@@ -299,11 +411,9 @@
     }
 
     function showDeleteModal(taskId) {
-        // Открываем модальное окно
         const modal = new bootstrap.Modal(document.getElementById('deleteTaskModal'));
         modal.show();
 
-        // Навешиваем обработчик на кнопку подтверждения
         const confirmButton = document.getElementById('confirmDeleteBtn');
         confirmButton.onclick = function () {
             deleteTask(taskId);
@@ -311,26 +421,106 @@
         };
     }
 
-    // Обработчик для клика по кнопкам "Удалить"
     document.addEventListener('click', function (event) {
         const deleteButton = event.target.closest('#deleteTaskBtn');
         if (deleteButton) {
-            const taskId = deleteButton.dataset.taskId; // Получаем ID задачи из data-атрибута
-            showDeleteModal(taskId);  // Открываем модальное окно с соответствующим taskId
+            const taskId = deleteButton.dataset.taskId;
+            showDeleteModal(taskId);
         }
     })
 
-    // (Необязательно) Обновление списка задач, если необходимо
     function updateTaskList() {
         fetch('/projects/tasks/')
             .then(response => response.text())
             .then(html => {
-                const taskListContainer = document.querySelector('.task-list'); // Ваш селектор для списка задач
+                const taskListContainer = document.querySelector('.task-list');
                 if (taskListContainer) {
                     taskListContainer.innerHTML = html;
                 }
             })
             .catch(error => console.error('Ошибка при обновлении списка задач:', error));
     }
+
+    document.getElementById('confirmUpdateBtn').addEventListener('click', function() {
+        var taskID = activeTask
+        console.log(taskID)
+
+        localStorage.setItem('activeTask', taskID);
+
+        var formData = {
+            title: document.getElementById('taskTitle').value,
+            description: document.getElementById('taskDescription').value,
+            status: document.getElementById('taskStatus').value,
+            priority: document.getElementById('taskPriority').value,
+            user: document.getElementById('taskUser').value
+        };
+
+        fetch(`/projects/task-update/${taskID}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Ошибка при обновлении задачи');
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                var modal = bootstrap.Modal.getInstance(document.getElementById('updateTaskModal'));
+                modal.hide()
+
+                // const updatedTaskElement = document.querySelector(`[data-task-id="${taskID}"]`);
+                
+                {#if (updatedTaskElement) {#}
+                {#    // Обновляем текст задачи (например, title и description)#}
+                {#    updatedTaskElement.querySelector('.task-title').textContent = formData.title;#}
+                {#    updatedTaskElement.querySelector('.task-description').textContent = formData.description;#}
+                {##}
+                {#    // Делаем задачу активной прямо сейчас#}
+                {#    updatedTaskElement.classList.add('active'); // Добавляем класс активности#}
+                {#    selectTask(updatedTaskElement); // Вызываем функцию selectTask для обновленной задачи#}
+
+                location.reload();
+                localStorage.setItem('activeTask', taskID);
+            } else {
+                alert('Failed to update task.');
+            }
+        })
+        .catch(error => console.error('Ошибка при обновлении задачи:', error));
+    });
+
+    document.getElementById('commentForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const description = document.getElementById('commentDescription').value;
+        console.log(description)
+        console.log(activeTask)
+
+        fetch('/projects/task/create-comment/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                task_id: activeTask,
+                description: description
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.log(data.error);
+            } else {
+                document.getElementById('commentDescription').value = '';
+                document.getElementById('commentTaskModal').classList.remove('show');
+                location.reload();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
     </script>
 {% endblock %}

@@ -107,6 +107,7 @@ class Task(models.Model):
 
 class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     description = models.TextField(blank=True)
@@ -134,7 +135,7 @@ class History(models.Model):
     description = models.TextField(blank=True)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
-    object_id = models.PositiveIntegerField(null=True, blank=True)
+    object_id = models.CharField(null=True, blank=True, max_length=255)
     content_object = GenericForeignKey('content_type', 'object_id')
 
 

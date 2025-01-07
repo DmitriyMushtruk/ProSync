@@ -1,0 +1,250 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Main{% endblock %}
+
+{% block content %}
+    {% csrf_token %}
+
+    <style>
+        .chat-message {
+            background-color: #343A40;
+            max-width: 30vw;
+        }
+
+        #chat-log {
+            height: 100%;
+            overflow-y: scroll;
+            scrollbar-width: none;
+            padding: 0;
+        }
+
+        #chat-log::-webkit-scrollbar {
+            display: none;
+        }
+
+        #chat-log {
+            flex-grow: 1;
+            max-height: calc(80vh - 65px);
+        }
+
+        .float-right {
+            float: right;
+            clear: both;
+        }
+
+        .float-left {
+            float: left;
+            clear: both;
+        }
+
+        .msg-owner{
+            background-color: #007399;
+        }
+
+        .message-date {
+            font-size: 0.7rem;
+            color: #9ebec7;
+        }
+
+        .message-header {
+            gap: 10px;
+        }
+
+        .chat-manager {
+            height: 5vh;
+            padding: 0;
+        }
+
+        #chat-message-input {
+            border: 2px solid #ccc;
+            padding: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease-in-out;
+        }
+
+        #chat-message-input:focus {
+            outline: none;
+            border-color: transparent;
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(221, 110, 66, 0.6);
+            }
+            50% {
+                box-shadow: 0 0 10px 20px rgba(221, 110, 66, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(221, 110, 66, 0.6);
+            }
+        }
+
+        #chat-message-submit {
+            color: #DD6E42;
+            border-color: #DD6E42;
+            font-size: 1.7rem;
+            background-color: #212529;
+        }
+
+        .btn-common {
+            color: #DD6E42;
+            border-color: #DD6E42;
+        }
+
+        .btn-common:hover {
+            background-color: #DD6E42;
+            color: #CCDDE2;
+            border-color: #DD6E42;
+        }
+
+    </style>
+    <div class="col-9 bg-dark rounded" style="height: 80vh;">
+        <div class="row d-flex flex-column" style="height: 100%;">
+            <div id="chat-log" style="flex-grow: 1;">
+                {% for message in chat_messages %}
+                    {% if message.sender == current_user %}
+                        <div class="chat-message rounded p-2 m-2 float-right msg-owner">
+                            <div class="message-header d-flex justify-content-end align-items-center">
+                                {{ message.sender.username }}
+                                {% if message.sender.avatar %}
+                                    <img class="owner-avatar rounded" src="{{ message.sender.avatar.url }}" alt="User Avatar">
+                                {% else %}
+                                    <img class="owner-avatar rounded" src="{% static 'avatars/default-avatar.jpg' %}" alt="Default Avatar">
+                                {% endif %}
+                            </div>
+                            <div class="message-content my-1">
+                                {{ message.content }}
+                            </div>
+                            <div class="message-date d-flex justify-content-end">
+                                <span class="small">{{ message.created_at|date:"d.m.y H:i" }}</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="chat-message rounded p-2 m-2 float-left">
+                            <div class="message-header d-flex justify-content-start align-items-center">
+                                {% if message.sender.avatar %}
+                                    <img class="owner-avatar rounded" src="{{ message.sender.avatar.url }}" alt="User Avatar">
+                                {% else %}
+                                    <img class="owner-avatar rounded" src="{% static 'avatars/default-avatar.jpg' %}" alt="Default Avatar">
+                                {% endif %}
+                                {{ message.sender.username }}
+                            </div>
+                            <div class="message-content my-1">
+                                {{ message.content }}
+                            </div>
+                            <div class="message-date">
+                                {{ message.created_at|date:"d.m.y H:i" }}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="chat-manager d-flex justify-content-evenly align-items-center mt-2">
+                <input class="rounded" id="chat-message-input" type="text" size="100" placeholder="Type your message...">
+                <label for="chat-message-input"></label>
+
+                <button class="rounded d-flex" id="chat-message-submit"><i class="bi bi-send-fill m-0 p-0"></i></button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const roomId = "{{ chat_room.id }}";
+    const currentUser = "{{ request.user.username }}";
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + roomId + '/'
+    );
+
+    chatSocket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+        const chatLog = document.querySelector('#chat-log');
+
+        const newMessage = document.createElement('div');
+        newMessage.className = 'chat-message rounded p-2 m-2';
+
+        const createdAt = data.created_at || Date.now();
+        const options = {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+        };
+        const formattedDate = new Intl.DateTimeFormat('ru-RU', options)
+            .format(new Date(createdAt))
+            .replace(',', '');
+
+        if (data.sender === currentUser) {
+            newMessage.classList.add('float-right', 'msg-owner');
+            newMessage.innerHTML = `
+                <div class="message-header d-flex justify-content-end align-items-center">
+                    ${data.sender}
+                    <img class="owner-avatar rounded" src="${data.sender_avatar || '{% static "avatars/default-avatar.jpg" %}'}" alt="User Avatar">
+                </div>
+                <div class="message-content my-1">
+                    ${data.message}
+                </div>
+                <div class="message-date d-flex justify-content-end">
+                    <span class="small">${formattedDate}</span>
+                </div>
+            `;
+        } else {
+            newMessage.classList.add('float-left');
+            newMessage.innerHTML = `
+                <div class="message-header d-flex justify-content-start align-items-center">
+                    <img class="owner-avatar rounded" src="${data.sender_avatar || '{% static "avatars/default-avatar.jpg" %}'}" alt="User Avatar">
+                    ${data.sender}
+                </div>
+                <div class="message-content my-1">
+                    ${data.message}
+                </div>
+                <div class="message-date">
+                    <span class="small">${formattedDate}</span>
+                </div>
+            `;
+        }
+
+
+        chatLog.appendChild(newMessage);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    };
+
+    chatSocket.onclose = function (e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function (e) {
+        if (e.keyCode === 13) {
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function (e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+
+        if (message.trim() !== '') {
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'sender': currentUser
+            }));
+            messageInputDom.value = '';
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const chatLog = document.getElementById('chat-log');
+
+        const scrollToBottom = () => {
+            chatLog.scrollTop = chatLog.scrollHeight;
+        };
+
+        scrollToBottom();
+    });
+</script>
+{% endblock %}

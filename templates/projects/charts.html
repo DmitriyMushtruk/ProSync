@@ -1,0 +1,164 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Main{% endblock %}
+
+{% block content %}
+    {% csrf_token %}
+    <style>
+        #taskStatusChart {
+            width: 300px;
+        }
+
+        .carousel-item {
+            text-align: center;
+        }
+    </style>
+
+
+        <div id="carouselExample" class="carousel slide col-9 bg-dark rounded" style="height: 80vh;">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <div class="d-flex align-items-center flex-column pt-2">
+                        <h3>Tasks Status Chart</h3>
+
+                        <canvas id="taskStatusChart" style="max-width: 70vw; max-height: 70vh;"></canvas>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="d-flex align-items-center flex-column pt-2">
+                        <h3>Tasks Priority Chart</h3>
+
+                        <canvas id="taskPriorityChart" style="max-width: 70vw; max-height: 70vh;"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+
+
+
+    <script>
+        let tasks = JSON.parse('{{ tasks|safe }}');
+
+        let statusCounts = {
+            'in progress': 0,
+            'to do': 0,
+            'on hold': 0,
+            'done': 0,
+            'backlog': 0
+        };
+
+        let priorityCounts = {
+            'trivial': 0,
+            'low': 0,
+            'medium': 0,
+            'high': 0,
+        }
+
+        tasks.forEach(function(task) {
+            if (statusCounts[task.status] !== undefined) {
+                statusCounts[task.status]++;
+            }
+
+            if (priorityCounts[task.priority] !== undefined) {
+                priorityCounts[task.priority]++;
+            }
+        });
+
+        let statusLabels = ['In progress', 'To do', 'On hold', 'Done', 'Backlog'];
+        let priorityLabels = ['Trivial', 'Low', 'Medium', 'High']
+
+        let statusData = [
+            statusCounts['in progress'],
+            statusCounts['to do'],
+            statusCounts['on hold'],
+            statusCounts['done'],
+            statusCounts['backlog']
+        ];
+
+        let priorityData = [
+            priorityCounts['trivial'],
+            priorityCounts['low'],
+            priorityCounts['medium'],
+            priorityCounts['high'],
+        ]
+
+        let statusChartBlock = document.getElementById('taskStatusChart').getContext('2d');
+
+        let priorityChartBlock = document.getElementById('taskPriorityChart').getContext('2d');
+
+        let taskStatusChart = new Chart(statusChartBlock, {
+            type: 'pie',
+            data: {
+                labels: statusLabels,
+                datasets: [{
+                    label: 'Count',
+                    data: statusData,
+                    backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)'],
+                    borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: {
+                                size: 14,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#CCDDE2',
+                        }
+                    }
+                }
+            }
+        });
+
+        let taskPriorityChart = new Chart(priorityChartBlock, {
+            type: 'pie',
+            data: {
+                labels: priorityLabels,
+                datasets: [{
+                    label: 'Count',
+                    data: priorityData,
+                    backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)'],
+                    borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: {
+                                size: 14,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#CCDDE2',
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+{% endblock %}

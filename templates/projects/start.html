@@ -1,77 +1,104 @@
-{% extends 'base_generic.html' %}
 {% load static %}
 {% load widget_tweaks %}
-{% block title %}Login Page{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-{% block content %}
+    <title>{% block title %}Start{% endblock %}</title>
+
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    {% load widget_tweaks %}
+    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: "Rubik", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: 500;
+        font-style: normal;
+        background-color: var(--lighter-dark);
+        color: var(--light);
+    }
+
+    .custom-carousel {
+        max-height: 100vh;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+    }
+
+    .carousel-img {
+        object-fit: cover;
+        border-radius: 15px;
+    }
+
+    .carousel-item {
+        max-height: 86vh;
+    }
+
+    .projects-list-btn {
+        cursor: pointer;
+        background-color: #DD6E42;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: block;
+        text-align: center;
+    }
+
+    .projects-list-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .projects-list-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px #dd6e42;
+    }
+
+    .modal-content {
+        color: #CCDDE2;
+    }
+
+    .status-circle {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+    .status-active {
+        background-color: green;
+    }
+    .status-completed {
+        background-color: red;
+    }
+    .status-archived {
+        background-color: yellow;
+    }
+    .status-default {
+        background-color: gray;
+    }
+</style>
     {% csrf_token %}
-    <section class="text-center text-lg-start" style="max-height: 86vh;">
-
-        <style>
-            .custom-carousel {
-                max-height: 80vh;
-                overflow: hidden;
-                display: flex;
-                align-items: center;
-            }
-
-            .carousel-img {
-                object-fit: cover;
-                border-radius: 15px;
-            }
-
-            .carousel-item {
-                max-height: 86vh;
-            }
-
-            .projects-list-btn {
-                cursor: pointer;
-                background-color: #DD6E42;
-                border: none;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                transition: transform 0.2s, box-shadow 0.2s;
-                display: block;
-                text-align: center;
-            }
-
-            .projects-list-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
-            }
-
-            .projects-list-btn:focus {
-                outline: none;
-                box-shadow: 0 0 0 2px #dd6e42;
-            }
-
-            .modal-content {
-                color: #CCDDE2;
-            }
-
-            .status-circle {
-                display: inline-block;
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-            }
-            .status-active {
-                background-color: green;
-            }
-            .status-completed {
-                background-color: red;
-            }
-            .status-archived {
-                background-color: yellow;
-            }
-            .status-default {
-                background-color: gray;
-            }
-        </style>
-        <div class="container d-flex align-items-center" style="height: 86vh;">
+    <section class="text-center text-lg-start" style="max-height: 100vh;">
+        <div class="container d-flex align-items-center" style="height: 100vh;">
             <div class="row g-5 w-100 align-items-center">
 
-                <div class="col-lg-6 mb-lg-0 my-5" style="height: 80vh;">
-                    <div class="d-flex flex-column gap-4" style="height: 100%;">
+                <div class="col-lg-6 mb-lg-0 my-5" style="height: 100vh;">
+                    <div class="d-flex flex-column justify-content-center gap-4" style="height: 100%;">
 
                         <button
                             type="button"
@@ -99,20 +126,32 @@
                                 <p class="card-text">Do you have an access key? Join an existing project!</p>
 
                                 <div class="input-group mb-3" style="margin: 0 auto; width: fit-content; max-height: 43px;">
-                                    <div class="input-group" style="color: var(--dark)">
-                                        <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
-                                        <input type="text" class="form-control" id="keyInput" placeholder="Access key" aria-label="Access key" aria-describedby="addon-wrapping" style="border-radius: 0;">
-                                        <a
-                                            href="{% url 'users:home' %}"
-                                            class="btn btn-secondary d-flex justify-content-center align-items-center"
-                                            style="
-                                            background-color: #DD6E42;
-                                            border-color: #DD6E42;
-                                            text-align: center;"
-                                        >
-                                        Join
-                                        </a>
-                                    </div>
+                                    <form 
+                                        action="{% url 'projects:join-project' %}" 
+                                        method="POST" 
+                                        style="display: flex; align-items: center;">
+                                        {% csrf_token %}
+                                        <div class="input-group" style="color: var(--dark)">
+                                            <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                                            <input 
+                                                type="text" 
+                                                class="form-control" 
+                                                id="keyInput" 
+                                                name="access_key" 
+                                                placeholder="Access key" 
+                                                aria-label="Access key" 
+                                                aria-describedby="addon-wrapping" 
+                                                style="border-radius: 0;" 
+                                                required
+                                            >
+                                            <button 
+                                                type="submit" 
+                                                class="btn btn-secondary d-flex justify-content-center align-items-center"
+                                                style="background-color: #DD6E42; border-color: #DD6E42; text-align: center;">
+                                                Join
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -123,13 +162,13 @@
                     <div id="carouselExample" class="carousel slide custom-carousel rounded" data-bs-ride="carousel">
                         <div class="carousel-inner">
                             <div class="carousel-item active">
-                                <img src="{% static 'Login.jpg' %}" class="d-block w-100 carousel-img" alt="Slide 1" style="max-height: 86vh">
+                                <img src="{% static 'carousel/Slide1.png' %}" class="d-block w-100 carousel-img" alt="Slide 1" style="max-height: 86vh">
                             </div>
                             <div class="carousel-item">
-                                <img src="{% static 'register.jpg' %}" class="d-block w-100 carousel-img" alt="Slide 2" style="max-height: 86vh">
+                                <img src="{% static 'carousel/Slide2.png' %}" class="d-block w-100 carousel-img" alt="Slide 1" style="max-height: 86vh">
                             </div>
                             <div class="carousel-item">
-                                <img src="{% static 'Login.jpg' %}" class="d-block w-100 carousel-img" alt="Slide 3" style="max-height: 86vh">
+                                <img src="{% static 'carousel/Slide3.png' %}" class="d-block w-100 carousel-img" alt="Slide 1" style="max-height: 86vh">
                             </div>
                         </div>
                         <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
@@ -172,7 +211,7 @@
             </div>
         </div>
 
-    <div class="modal fade" id="projectsModal" tabindex="-1" aria-labelledby="projectsModalLabel" aria-hidden="true">
+        <div class="modal fade" id="projectsModal" tabindex="-1" aria-labelledby="projectsModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content bg-dark">
                     <div class="modal-header"  data-bs-theme="dark">
@@ -244,5 +283,3 @@
             .catch(error => console.error('Error:', error));
         });
     </script>
-
-{% endblock %}

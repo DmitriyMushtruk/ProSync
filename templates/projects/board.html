@@ -1,0 +1,442 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Main{% endblock %}
+
+{% block content %}
+    {% csrf_token %}
+
+    <style>
+        .task {
+            background-color: #343A40;
+        }
+
+        .task.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .in_progress {
+            border-left: #CCDDE2 1px solid;
+            border-right: #CCDDE2 1px solid;
+            border-top: #CCDDE2 1px solid;
+        }
+
+        .to_do {
+            border-top: #CCDDE2 1px solid;
+        }
+
+        .done {
+            border-top: #CCDDE2 1px solid;
+        }
+
+        .col-label {
+            position: absolute;
+            top: -17px;
+            left: 12px;
+            background: #212529;
+            padding: 0 10px;
+            font-size: 1.5rem;
+            color: #CCDDE2;
+            font-weight: bold;
+        }
+
+        .col-4 {
+            margin-top: 2vh;
+        }
+
+        .board-avatar {
+            width: 35px;
+            height: 35px;
+        }
+
+        .task-column {
+            height: 65vh;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .task-column::-webkit-scrollbar {
+            display: none;
+        }
+
+        .active-filter {
+            font-weight: bold !important;
+            color: #CCDDE2 !important;
+            background-color: #DD6E42 !important;
+            box-sizing: border-box !important;
+        }
+
+        .active-filter:hover {
+            color: #CCDDE2;
+        }
+
+        .style-low-priority {
+            background-color: #008b74;
+        }
+
+        .style-medium-priority {
+            background-color: #2e2eb8;
+        }
+
+        .style-high-priority {
+            background-color: #c34a36;
+        }
+
+        .style-trivial-priority {
+            background-color: gray;
+        }
+
+        .priority-status {
+            padding: 3px;
+        }
+
+        .task-title {
+            color: #CCDDE2;
+        }
+
+        .task-title:hover {
+            color: #DD6E42;
+        }
+
+    </style>
+
+    <div class="col-9 bg-dark rounded" style="height: 80vh;">
+        <div class="row">
+            <div class="d-flex">
+                <ul class="horizontal-scroll my-3 flex-fill list-unstyled">
+                    <li>
+                        <a href="?filter=all" class="{% if selected_filter == 'all' %}active-filter rounded px-1{% endif %}">All</a>
+                    </li>
+                    {% for member in members %}
+                        <li>
+                            <a href="?filter={{ member.user.id }}" class="{% if selected_filter == member.user.id|stringformat:"s" %}active-filter rounded px-1{% endif %}">
+                                {{ member.user }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+
+        <div class="row d-flex">
+            <!-- To Do Column -->
+            <div class="col-4 p-0 position-relative">
+                <span class="col-label">To Do</span>
+                <div id="to do" class="to_do task-column p-3 d-flex flex-column">
+                    {% for task in tasks %}
+                        {% if task.status == 'to do' %}
+                            <div class="task my-2 p-2 d-flex justify-content-between align-items-center rounded" data-id="{{ task.id }}">
+                                <div>
+                                    <div>
+                                        <a href="#" class="task-title" data-bs-toggle="modal" data-bs-target="#updateTaskModal" data-task-id="{{ task.id }}">
+                                            {{ task.title }}
+                                        </a>
+                                    </div>
+                                    <span class="small text-uppercase priority-status rounded
+                                        {% if task.priority == 'low' %} style-low-priority {% endif %}
+                                        {% if task.priority == 'medium' %} style-medium-priority {% endif %}
+                                        {% if task.priority == 'high' %} style-high-priority {% endif %}
+                                        {% if task.priority == 'trivial' %} style-trivial-priority {% endif %}
+                                        " id="task-{{ task.id }}" data-priority="{{ task.priority }}">
+                                        {{ task.priority }}
+                                    </span>
+                                </div>
+
+                                {% if task.user.avatar %}
+                                    <img class="board-avatar rounded" src="{{ task.user.avatar.url }}" alt="User Avatar">
+                                {% else %}
+                                    <img class="board-avatar rounded" src="{% static 'avatars/default-avatar.jpg' %}" alt="Default Avatar">
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- In Progress Column -->
+            <div class="col-4 p-0 position-relative">
+                <span class="col-label">In Progress</span>
+                <div id="in progress" class=" in_progress task-column p-3 d-flex flex-column">
+                    {% for task in tasks %}
+                        {% if task.status == 'in progress' %}
+                            <div class="task my-2 p-2 d-flex justify-content-between align-items-center rounded" data-id="{{ task.id }}">
+                                <div>
+                                    <div>
+                                        <a href="#" class="task-title" data-bs-toggle="modal" data-bs-target="#updateTaskModal" data-task-id="{{ task.id }}">
+                                            {{ task.title }}
+                                        </a>
+                                    </div>
+                                    <span class="small text-uppercase priority-status rounded
+                                        {% if task.priority == 'low' %} style-low-priority {% endif %}
+                                        {% if task.priority == 'medium' %} style-medium-priority {% endif %}
+                                        {% if task.priority == 'high' %} style-high-priority {% endif %}
+                                        {% if task.priority == 'trivial' %} style-trivial-priority {% endif %}
+                                        " id="task-{{ task.id }}" data-priority="{{ task.priority }}">
+                                        {{ task.priority }}
+                                    </span>
+                                </div>
+
+                                {% if task.user.avatar %}
+                                    <img class="board-avatar rounded" src="{{ task.user.avatar.url }}" alt="User Avatar">
+                                {% else %}
+                                    <img class="board-avatar rounded" src="{% static 'avatars/default-avatar.jpg' %}" alt="Default Avatar">
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Done Column -->
+            <div class="col-4 p-0 position-relative">
+                <span class="col-label">Done</span>
+                <div id="done" class="done task-column p-3 d-flex flex-column">
+                    {% for task in tasks %}
+                        {% if task.status == 'done' %}
+                             <div class="task my-2 p-2 d-flex justify-content-between align-items-center rounded" data-id="{{ task.id }}">
+                                <div>
+                                    <div>
+                                        <a href="#" class="task-title" data-bs-toggle="modal" data-bs-target="#updateTaskModal" data-task-id="{{ task.id }}">
+                                            {{ task.title }}
+                                        </a>
+                                    </div>
+                                    <span class="small text-uppercase priority-status rounded
+                                        {% if task.priority == 'low' %} style-low-priority {% endif %}
+                                        {% if task.priority == 'medium' %} style-medium-priority {% endif %}
+                                        {% if task.priority == 'high' %} style-high-priority {% endif %}
+                                        {% if task.priority == 'trivial' %} style-trivial-priority {% endif %}
+                                        " id="task-{{ task.id }}" data-priority="{{ task.priority }}">
+                                        {{ task.priority }}
+                                    </span>
+                                </div>
+
+                                {% if task.user.avatar %}
+                                    <img class="board-avatar rounded" src="{{ task.user.avatar.url }}" alt="User Avatar">
+                                {% else %}
+                                    <img class="board-avatar rounded" src="{% static 'avatars/default-avatar.jpg' %}" alt="Default Avatar">
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="updateTaskModal" tabindex="-1" aria-labelledby="updateTaskLabel" aria-hidden="true">
+        <div class="modal-dialog" style="color: #CCDDE2">
+            <div class="modal-content bg-dark" style="width: 80%;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateTaskLabel">Log Time</h5>
+                </div>
+
+                <div class="modal-body">
+                    <form id="updateTaskForm">
+                        
+                        <div class="mb-3">
+                            <label for="taskDescription" class="form-label">Description</label>
+                            <textarea class="form-control px-0 py-2" id="taskDescription" name="description" required></textarea>
+                        </div>
+
+                        <div class="d-flex flex-column justify-content-around align-items-start">
+                           
+                            <div class="mb-3">
+                                <label for="taskDate" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="taskDate" name="date" value="{{ current_date|date:"d-m-Y" }}" required>
+                            </div>
+                        
+                            <div class="mb-3">
+                                <label for="taskEstimate" class="form-label">Worked</label>
+                                <div id="timeEstimateControls" class="d-flex align-items-center">
+                                    <div class="btn-group me-2">
+                                        <button type="button" class="btn btn-outline-secondary btn-common" id="addOneHour">+1h</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-common" id="addFiveMinutes">+5m</button>
+                                    </div>
+                                    <input type="text" class="form-control" id="taskEstimate" name="original_estimate" value="0h 0m" readonly>
+                                    <button type="button" class="btn btn-outline-danger ms-2 btn-fail" id="clearTime">Clear</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-backspace-fill me-2"></i>Back</button>
+                    <button type="button" id="confirmUpdateBtn" class="btn btn-success"><i class="bi bi-check-circle-fill me-2"></i>Log Time</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+    document.getElementById('confirmUpdateBtn').addEventListener('click', function () {
+        const modal = document.getElementById('updateTaskModal');
+        const taskId = modal.getAttribute('data-task-id');
+
+        const description = document.getElementById('taskDescription').value;
+        const date = document.getElementById('taskDate').value;
+        const worked = document.getElementById('taskEstimate').value;
+
+        fetch(`/projects/task-logtime/${taskId}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                description: description,
+                date: date,
+                worked: worked,
+            }),
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Failed to update the task');
+            }
+        })
+        .then(data => {
+            console.log('Task updated successfully:', data);
+            const modalElement = bootstrap.Modal.getInstance(modal);
+            modalElement.hide();
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+
+
+    document.querySelectorAll('.task-title').forEach(taskTitle => {
+        taskTitle.addEventListener('click', function () {
+            const taskId = this.getAttribute('data-task-id');
+            const modal = document.getElementById('updateTaskModal');
+
+            modal.setAttribute('data-task-id', taskId);
+        });
+    });
+
+    document.getElementById('updateTaskModal').addEventListener('hidden.bs.modal', function () {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('taskDescription').value = '';
+        document.getElementById('taskDate').value = today;
+
+        this.removeAttribute('data-task-id');
+    });
+
+
+    
+    document.addEventListener('DOMContentLoaded', function () {
+        let totalHours = 0;
+        let totalMinutes = 0;
+
+        const addOneHourButton = document.getElementById('addOneHour');
+        const addFiveMinutesButton = document.getElementById('addFiveMinutes');
+        const clearButton = document.getElementById('clearTime');
+        const timeInputField = document.getElementById('taskEstimate');
+        const timeLogModal = document.getElementById('updateTaskModal');
+
+        function updateTime() {
+            totalHours += Math.floor(totalMinutes / 60);
+            totalMinutes = totalMinutes % 60;
+
+            let timeString = `${totalHours}h ${totalMinutes}m`;
+
+            timeInputField.value = timeString;
+        }
+
+        addOneHourButton.addEventListener('click', function() {
+            totalHours += 1;
+            updateTime();
+        });
+
+        addFiveMinutesButton.addEventListener('click', function() {
+            totalMinutes += 5;
+            updateTime();
+        });
+
+        clearButton.addEventListener('click', function() {
+            totalHours = 0;
+            totalMinutes = 0;
+            updateTime();
+        });
+
+        timeLogModal.addEventListener('hidden.bs.modal', function () {
+            totalHours = 0;
+            totalMinutes = 0;
+            updateTime();
+        });
+    });
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const taskDateInput = document.getElementById('taskDate');
+        if (taskDateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            taskDateInput.value = today;
+        }
+    });
+    
+    const taskColumns = document.querySelectorAll('.task-column');
+
+    taskColumns.forEach(column => {
+        column.addEventListener('dragover', event => {
+            event.preventDefault();
+            column.classList.add('drag-over');
+        });
+
+        column.addEventListener('dragleave', () => {
+            column.classList.remove('drag-over');
+        });
+
+        column.addEventListener('drop', event => {
+            event.preventDefault();
+            const taskId = event.dataTransfer.getData('text/plain');
+            const taskElement = document.querySelector(`[data-id="${taskId}"]`);
+            const newStatus = column.id;
+
+            column.appendChild(taskElement);
+            column.classList.remove('drag-over');
+
+            fetch(`/projects/task-update/${taskId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    console.log('Task updated successfully:', data.message);
+                    location.reload()
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+    const tasks = document.querySelectorAll('.task');
+    tasks.forEach(task => {
+        task.setAttribute('draggable', true);
+        task.addEventListener('dragstart', event => {
+            event.dataTransfer.setData('text/plain', task.dataset.id);
+            task.classList.add('dragging');
+        });
+
+        task.addEventListener('dragend', () => {
+            task.classList.remove('dragging');
+        });
+    });
+    </script>
+{% endblock content %}
+
+
+

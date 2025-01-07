@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  pro-sync:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - python-net
+    depends_on:
+      - db
+
+  db:
+    container_name: pro-sync-db
+    image: postgres:15-alpine
+    hostname: pro-sync-db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - python-net
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+networks:
+  python-net:
+    driver: bridge
+    name: python-net
+
+volumes:
+  postgres_data:
