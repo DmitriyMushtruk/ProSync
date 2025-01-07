@@ -23,6 +23,7 @@ class ProjectCreateForm(forms.ModelForm):
 class JoinProjectForm(forms.Form):
     access_key = forms.CharField(max_length=50, label="Access Key")
 
+
 class TaskForm(forms.ModelForm):
     original_estimate = forms.CharField(
         required=True,

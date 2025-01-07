@@ -6,4 +6,4 @@ class UsersConfig(AppConfig):
     name = 'users'
 
     def ready(self):
-        import django.contrib.admin.models
+        import django.contrib.admin.models # noqa

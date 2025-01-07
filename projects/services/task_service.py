@@ -1,6 +1,7 @@
 import uuid
 import base64
 
+
 def generate_short_id(project_name: str, unique_id: str, length: int = 4) -> str:
     abbreviation = ''.join(word[0] for word in project_name.split() if word).upper()
 

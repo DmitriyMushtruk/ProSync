@@ -9,6 +9,7 @@ from django.http import HttpResponseRedirect
 from django.views import View
 from django.contrib import messages
 
+
 class RegisterView(CreateView):
     form_class = UserRegistrationForm
     template_name = 'users/register.html'
@@ -33,6 +34,7 @@ class RegisterView(CreateView):
         success_url = reverse_lazy('users:login')
         print(f"Redirecting to: {success_url}")
         return success_url
+
 
 class CustomLoginView(LoginView):
     template_name = 'users/login.html'

@@ -2,19 +2,16 @@ import json
 
 from django.contrib.contenttypes.models import ContentType
 from django.views.generic import ListView, DetailView, DeleteView
-from django.shortcuts import redirect
-from django.contrib.auth.decorators import login_required
 
 from users.models import User
 from chats.models import ChatRoom, ChatParticipant
-from .forms import ProjectCreateForm, JoinProjectForm, TaskForm
+from .forms import ProjectCreateForm, TaskForm
 from .models import Project, Team, TeamMember, History, Comment
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, CreateView
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, render
-from django.http import JsonResponse
 from django.views import View
 from .models import Task
 from django.core.exceptions import ObjectDoesNotExist
@@ -64,7 +61,7 @@ class CreateProjectView(LoginRequiredMixin, CreateView):
             return JsonResponse({'success': True, 'project_id': project.id})
         return JsonResponse({'success': False, 'error': form.errors.as_json()}, status=400)
 
-# TODO update redirect here ->
+
 class JoinProjectView(LoginRequiredMixin, View):
     # noinspection PyMethodMayBeStatic
     def post(self, request, *args, **kwargs):
@@ -101,6 +98,7 @@ class JoinProjectView(LoginRequiredMixin, View):
         except ObjectDoesNotExist:
             return JsonResponse({'error': 'Invalid access key.'}, status=404)
 
+
 class ProjectMainView(LoginRequiredMixin, DetailView):
     model = Project
     template_name = 'projects/main.html'
@@ -115,7 +113,6 @@ class ProjectMainView(LoginRequiredMixin, DetailView):
         history_items = project.history.all().order_by('timestamp')
         chat_room = ChatRoom.objects.get(project=project)
         print(chat_room.id)
-
 
         context['members'] = members
         context['tasks'] = tasks
@@ -183,10 +180,10 @@ class TaskCreateView(CreateView):
             project=project,
             user=self.request.user,
             action='create',
-            description=f"Task was created",
+            description="Task was created",
             content_object=self.object
         )
-        messages.success(self.request, f'Task successfully created.')
+        messages.success(self.request, 'Task successfully created.')
         return response
 
     def get_success_url(self):
@@ -313,7 +310,7 @@ class TaskDeleteView(DeleteView):
             project=project,
             user=self.request.user,
             action='delete',
-            description=f"Task was deleted",
+            description="Task was deleted",
             content_object=task
         )
         task.delete()
@@ -348,11 +345,12 @@ class TaskUpdateView(View):
             project=project,
             user=self.request.user,
             action='update',
-            description=f"Task was updated",
+            description="Task was updated",
             content_object=task
         )
         messages.success(request, 'Task updated successfully!')
         return JsonResponse({'success': True, 'message': 'Task updated successfully.'})
+
 
 class TimeLogView(View):
     # noinspection PyMethodMayBeStatic
@@ -384,7 +382,6 @@ class TimeLogView(View):
 
         messages.success(request, 'Time successfully was logged!')
         return JsonResponse({'success': True, 'message': 'Time successfully was logged.'})
-
 
 
 class CreateCommentView(View):
@@ -458,4 +455,3 @@ class ChartsView(LoginRequiredMixin, DetailView):
         context['status_counts'] = task_status_chart
 
         return context
-

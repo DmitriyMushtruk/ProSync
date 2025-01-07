@@ -4,6 +4,7 @@ import uuid
 from users.models import User
 from projects.models import Project
 
+
 class ChatRoom(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     project = models.OneToOneField(

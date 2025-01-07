@@ -1,9 +1,8 @@
-from django.shortcuts import render
-
 from django.shortcuts import render, get_object_or_404
 
 from projects.models import Project
 from .models import ChatRoom
+
 
 def chat_room(request, room_id):
     room = get_object_or_404(ChatRoom, id=room_id)

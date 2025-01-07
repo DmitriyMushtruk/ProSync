@@ -1,6 +1,7 @@
 # services/history_service.py
 from projects.models import History
 
+
 class HistoryService:
     @staticmethod
     def create_history_entry(project, user, action, description='', content_object=None):

@@ -4,6 +4,7 @@ from users.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 
+
 class Team(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     project = models.OneToOneField(
@@ -28,7 +29,6 @@ class TeamMember(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_memberships')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
     joined_date = models.DateTimeField(auto_now_add=True)
-
 
     class Meta:
         unique_together = ('team', 'user')
@@ -95,7 +95,6 @@ class Task(models.Model):
     remaining_estimate = models.FloatField(default=0.0, help_text="Remaining time estimate in hours")
     time_spent = models.FloatField(default=0.0, help_text="Time spent in hours")
 
-
     class Meta:
         ordering = ['created_at']
         verbose_name = 'Task'
@@ -138,7 +137,6 @@ class History(models.Model):
     object_id = models.CharField(null=True, blank=True, max_length=255)
     content_object = GenericForeignKey('content_type', 'object_id')
 
-
     class Meta:
         verbose_name = 'History'
         verbose_name_plural = 'Histories'
@@ -146,4 +144,3 @@ class History(models.Model):
 
     def __str__(self):
         return f"{self.get_action_display()} on {self.content_object} by {self.user}"
-
