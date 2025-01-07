@@ -14,8 +14,8 @@ ENV PYTHONUNBUFFERED 1
 COPY . /app/
 
 # Update pip to the latest version and install project dependencies
-#RUN pip install --upgrade pip
-#RUN pip install -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
 # Expose port 8000 to allow access to the Django application from outside the container
 EXPOSE 8000
