@@ -4,13 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>{% block title %}My Project{% endblock %}</title>
-
+    <title>{% block title %}{% endblock %}</title>
     {% load bootstrap5 %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
     {% load widget_tweaks %}
+    <link rel="icon" href="{% static 'favico_prosync.png' %}" type="image/x-icon">
     <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -269,8 +268,12 @@
             <div class="container px-0" style="height: 83vh; padding-top: 3vh">
                 <div class="row w-100 h-100 d-flex flex-column align-items-start">
                     <div class="col-auto bg-dark d-flex flex-column py-3" style="max-height: 27vh; min-width: 10vw; border-radius: 10px">
-                        <img class="avatar" src="{% static 'Login.jpg' %}" alt="" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin: 0 auto;">
-    
+                        {% if request.user.avatar %}
+                            <img class="avatar main-avatar" src="{{ request.user.avatar.url }}" alt="User Avatar">
+                        {% else %}
+                            <img class="avatar main-avatar" src="{% static 'avatars/default-avatar.jpg' %}" alt="Default Avatar">
+                        {% endif %}
+
                         <div class="text-center mt-2 avatar-p rounded py-1">
                             <p class="m-0">{{ request.user.username }}</p>
                             <small class="m-0">Activity: 13.6h</small>
@@ -278,13 +281,33 @@
                     </div>
     
                     <div class="col-auto bg-dark d-flex flex-column py-3 mt-3" style="max-height: 86vh; min-width: 10vw; border-radius: 10px">
-                        <a href="{% url 'projects:main' project.id %}" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-house-fill"></i>Main</a>
-                        <a href="{% url 'projects:backlog' project.id %}" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-list-columns-reverse"></i>Backlog</a>
-                        <a href="{% url 'projects:board' project.id %}" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-kanban-fill"></i>Board</a>
-                        <a href="{% url 'chats:chat_room' chat_room.id %}" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-chat-dots-fill"></i>Chat</a>
-                        <a href="{% url 'projects:charts' project.id %}" class="sidebar-link btn btn-secondary text-start"><i class="bi bi-pie-chart-fill"></i>Charts</a>
-                        <a href="#" class="sidebar-link btn btn-secondary text-start mb-0"><i class="bi bi-gear-fill"></i>Settings</a>
+                        <a href="{% url 'projects:main' project.id %}"
+                           class="sidebar-link btn btn-secondary text-start {% if request.resolver_match.url_name == 'main' %}active{% endif %}">
+                           <i class="bi bi-house-fill"></i>Main</a>
+
+                        <a href="{% url 'projects:backlog' project.id %}"
+                           class="sidebar-link btn btn-secondary text-start {% if request.resolver_match.url_name == 'backlog' %}active{% endif %}">
+                           <i class="bi bi-list-columns-reverse"></i>Backlog</a>
+
+                        <a href="{% url 'projects:board' project.id %}"
+                           class="sidebar-link btn btn-secondary text-start {% if request.resolver_match.url_name == 'board' %}active{% endif %}">
+                           <i class="bi bi-kanban-fill"></i>Board</a>
+
+                        <a href="{% url 'chats:chat_room' chat_room.id %}"
+                           class="sidebar-link btn btn-secondary text-start {% if request.resolver_match.url_name == 'chat_room' %}active{% endif %}">
+                           <i class="bi bi-chat-dots-fill"></i>Chat</a>
+
+                        <a href="{% url 'projects:charts' project.id %}"
+                           class="sidebar-link btn btn-secondary text-start {% if request.resolver_match.url_name == 'charts' %}active{% endif %}">
+                           <i class="bi bi-pie-chart-fill"></i>Charts</a>
+
+                        <a href="#"
+                           data-bs-toggle="modal"
+                           data-bs-target="#settingsModal"
+                           class="sidebar-link btn btn-secondary text-start mb-0">
+                           <i class="bi bi-gear-fill"></i>Settings</a>
                     </div>
+
                     
                     {% block content %}
                     
@@ -315,6 +338,39 @@
         <p style="display: block; margin: 0 auto;">&copy; 2025 ProSync</p>
     </footer>
 
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createTaskModalLabel">Settings</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form id="settingsForm" method="POST" action="{% url 'users:settings' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+
+                        <label for="setAvatar" class="form-label">Avatar</label>
+                        <div class="input-group mb-3">
+                            <input type="file" class="form-control" id="avatarInput" name="avatar-file" aria-describedby="setAvatar" placeholder="Choose file">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="emailField" class="form-label col-sm-2">Email</label>
+                            <input type="text" class="form-control" id="emailInput" placeholder="Put your new email here" name="email" style="box-sizing: border-box">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -336,5 +392,34 @@
             });
         });
     });
+
+    document.getElementById('settingsForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch('/users/settings/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to update user data.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
 </script>
 </html>

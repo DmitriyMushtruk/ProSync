@@ -7,6 +7,7 @@ urlpatterns = [
     path('start/', views.StartView.as_view(), name='start'),
     path('new-project/', views.CreateProjectView.as_view(), name='new-project'),
     path('join-project/', views.JoinProjectView.as_view(), name='join-project'),
+    path('leave-project/', views.LeaveProjectView.as_view(), name='leave-project'),
     path('main/<uuid:project_id>/', views.ProjectMainView.as_view(), name='main'),
     path('create-task/<uuid:project_id>/', views.TaskCreateView.as_view(), name='create-task'),
     path('backlog/<uuid:project_id>/', views.BacklogView.as_view(), name='backlog'),

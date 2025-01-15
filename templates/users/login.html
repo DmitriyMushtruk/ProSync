@@ -6,12 +6,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>{% block title %}Login{% endblock %}</title>
+    <title>{% block title %}ProSync | Login{% endblock %}</title>
 
     {% load bootstrap5 %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
     {% load widget_tweaks %}
+    <link rel="icon" href="{% static 'favico_prosync.png' %}" type="image/x-icon">
     <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,6 +47,24 @@
 <body>
 <section class="text-center text-lg-start">
     <div class="container">
+
+        {% if messages %}
+            <div aria-live="polite text-bg-{{ message.tags }}" aria-atomic="true">
+                <div class="toast-container position-fixed top-0 end-0 p-3">
+                    {% for message in messages %}
+                        <div class="toast align-items-center text-bg-primary border-0 text-bg-{{ message.tags }}" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="d-flex">
+                                <div class="toast-body">
+                                    {{ message }}
+                                </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
         <div class="row g-0 align-items-center">
             <div class="col-lg-6 mb-5 mb-lg-0">
                 <div class="card cascading-right bg-body-tertiary bg-dark" style="backdrop-filter: blur(30px);">
@@ -64,19 +83,6 @@
                                 {{ form.password|add_class:"form-control w-100"|attr:"placeholder:Enter your password"|attr:"id:password" }}
                                 <label for="password">Password</label>
                             </div>
-
-{#                            <div class="row mb-4">#}
-{#                                <div class="col d-flex justify-content-center">#}
-{#                                    <div class="form-check">#}
-{#                                        <input class="form-check-input" type="checkbox" value="" id="form2Example31" checked />#}
-{#                                        <label class="form-check-label" for="form2Example31"> Remember me </label>#}
-{#                                    </div>#}
-{#                                </div>#}
-{##}
-{#                                <div class="col">#}
-{#                                    <a href="#" style="color: #CCDDE2">Forgot password?</a>#}
-{#                                </div>#}
-{#                            </div>#}
 
                             <button type="submit" class="btn btn-primary w-100" style="background-color: #DD6E42; border-color: #DD6E42">Sign me in!</button>
 
@@ -106,3 +112,4 @@
     </div>
 </section>
 </body>
+<script src={% static 'js/toast.js' %}></script>

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Project, Task
+from projects.models import Project, Task
 
 
 class ProjectCreateForm(forms.ModelForm):
@@ -49,9 +49,6 @@ class TaskForm(forms.ModelForm):
                 minutes = int(original_estimate.split('m')[0].split('h')[-1].strip())
             except ValueError:
                 raise forms.ValidationError("Minutes must be an integer.")
-
-        if minutes >= 60:
-            raise forms.ValidationError("Minutes must be an integer.")
 
         return hours + (minutes / 60)
 

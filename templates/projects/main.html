@@ -1,7 +1,7 @@
 {% extends 'base_generic.html' %}
 {% load static %}
 {% load widget_tweaks %}
-{% block title %}Main{% endblock %}
+{% block title %}Main | {{ project.name }}{% endblock %}
 
 {% block content %}
     {% csrf_token %}
@@ -39,20 +39,30 @@
             </div>
 
             <div class="d-flex flex-column justify-content-around">
-                <a href="#"
-                   class="btn-common btn-lg btn btn-outline-primary my-3"
-                   data-bs-toggle="modal" data-bs-target="#createTaskModal"
+                <a
+                    href="#"
+                    class="btn-common btn-lg btn btn-outline-primary my-3"
+                    data-bs-toggle="modal" data-bs-target="#createTaskModal"
                 >
                     <i class="bi bi-plus-square-fill m-0 me-2"></i>
                     Create task
                 </a>
 
-                <a href="#" class="btn-okay btn-lg btn btn-outline-primary mb-3">
+                <a
+                    href="#"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addMemberModal"
+                    class="btn-okay btn-lg btn btn-outline-primary mb-3"
+                >
                     <i class="bi bi-person-fill-add m-0 me-2"></i>
                     Add member
                 </a>
 
-                <a href="#" class="btn-fail btn-lg btn btn-outline-primary">
+                <a
+                    href="#"
+                    data-bs-toggle="modal"
+                    data-bs-target="#leaveProjectModal"
+                    class="btn-fail btn-lg btn btn-outline-primary">
                     <i class="bi bi-x-circle-fill m-0 me-2"></i>
                     Leave project
                 </a>
@@ -110,7 +120,11 @@
                         <li>
                             <a href="#" class="team-member-link d-flex align-items-center justify-content-between text-decoration-none me-3">
                                 <div class="d-flex align-items-center">
-                                    <img src="{% static 'Login.jpg' %}" alt="#" class="member-avatar me-2">
+                                    {% if member.user.avatar %}
+                                        <img class="member-avatar me-2" src="{{ member.user.avatar.url }}" alt="User Avatar">
+                                    {% else %}
+                                        <img class="member-avatar me-2" src="{% static 'avatars/default-avatar.jpg' %}" alt="Default Avatar">
+                                    {% endif %}
                                     <span class="member-name">{{ member.user }}</span>
                                 </div>
                                 <div class="text-end pe-3">
@@ -131,7 +145,7 @@
             <div class="modal-content bg-dark text-light">
 
                 <div class="modal-header">
-                    <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
+                    <h5 class="modal-title" id="createTaskModalLabel"><i class="bi bi-file-earmark-plus-fill me-2"></i>Create New Task</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
@@ -177,7 +191,6 @@
                                 <button type="button" class="btn btn-outline-danger ms-2 btn-fail" id="clearTime">Clear</button>
                             </div>
                        </div>
-
                     </div>
 
                     <div class="modal-footer">
@@ -188,7 +201,47 @@
             </div>
         </div>
     </div>
-    
+
+    <div class="modal fade" id="addMemberModal" tabindex="-1" aria-labelledby="addMemberModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addMemberModalLabel"><i class="bi bi-info-square-fill me-2"></i>How to add members?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>To invite members to this project, share the access code with them. They can use this code on the start page to join the project.</p>
+
+                    <p>The access code for this project is:</p>
+                    <pre class="bg-secondary text-white p-2 rounded m-0 text-center" style="font-size: 1.5rem">{{ project.access_key }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="leaveProjectModal" tabindex="-1" aria-labelledby="leaveProjectModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="leaveProjectModalLabel"><i class="bi bi-x-circle-fill me-2"></i>Do you really want to leave the project?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body d-flex align-items-center justify-content-between">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <form action="/projects/leave-project/" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="project_id" value="{{ project.id }}">
+                        <button type="submit" class="btn btn-primary">Leave Project</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             let totalHours = 0;

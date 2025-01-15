@@ -1,14 +1,14 @@
+import uuid
 from django.db import models
 from django.utils.timezone import now
-import uuid
-from users.models import User
-from projects.models import Project
+# from users.models import User
+# from projects.models import Project
 
 
 class ChatRoom(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     project = models.OneToOneField(
-        Project,
+        'projects.Project',
         on_delete=models.CASCADE,
         related_name='chat_room'
     )
@@ -20,7 +20,7 @@ class ChatRoom(models.Model):
 class ChatMessage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='messages')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -31,7 +31,7 @@ class ChatMessage(models.Model):
 class ChatParticipant(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='participants')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chat_participation')
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='chat_participation')
     last_active = models.DateTimeField(default=now)
 
     class Meta:

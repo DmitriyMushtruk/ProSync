@@ -352,3 +352,21 @@ ul {
 .horizontal-scroll a:hover {
     color: #DD6E42;
 }
+
+.main-avatar {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto;
+}
+
+
+.sidebar-link:hover, .sidebar-link.active {
+    background-color: #6c757d;
+    color: #ffffff;
+}
+
+.toast-container {
+    z-index: 100;
+}

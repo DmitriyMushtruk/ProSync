@@ -1,6 +1,6 @@
 import uuid
 from django.db import models
-from users.models import User
+# from users.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 
@@ -26,7 +26,7 @@ class TeamMember(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='members')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_memberships')
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='team_memberships')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
     joined_date = models.DateTimeField(auto_now_add=True)
 
@@ -45,7 +45,7 @@ class Project(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="project_owner")
+    owner = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name="project_owner")
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
@@ -83,7 +83,7 @@ class Task(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks')
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='tasks')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='backlog')
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='trivial')
@@ -108,7 +108,7 @@ class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     timestamp = models.DateTimeField(auto_now_add=True)
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='comments')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='comments')
     description = models.TextField(blank=True)
 
     def __str__(self):
@@ -127,7 +127,7 @@ class History(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='history')
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, blank=True)
 
     action = models.CharField(max_length=20, choices=ACTIONS)
     timestamp = models.DateTimeField(auto_now_add=True)

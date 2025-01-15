@@ -1,7 +1,7 @@
 {% extends 'base_generic.html' %}
 {% load static %}
 {% load widget_tweaks %}
-{% block title %}Main{% endblock %}
+{% block title %}Chat | {{ project.name }}{% endblock %}
 
 {% block content %}
     {% csrf_token %}
@@ -154,6 +154,7 @@
 <script>
     const roomId = "{{ chat_room.id }}";
     const currentUser = "{{ request.user.username }}";
+    const requestUserAvatarUrl = "{{ request.user.avatar_url }}";
     const chatSocket = new WebSocket(
         'ws://' + window.location.host + '/ws/chat/' + roomId + '/'
     );
@@ -183,7 +184,7 @@
             newMessage.innerHTML = `
                 <div class="message-header d-flex justify-content-end align-items-center">
                     ${data.sender}
-                    <img class="owner-avatar rounded" src="${data.sender_avatar || '{% static "avatars/default-avatar.jpg" %}'}" alt="User Avatar">
+                    <img class="owner-avatar rounded" src="${requestUserAvatarUrl || '{% static "avatars/default-avatar.jpg" %}'}" alt="User Avatar">
                 </div>
                 <div class="message-content my-1">
                     ${data.message}

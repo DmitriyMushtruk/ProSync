@@ -1,28 +1,28 @@
 import json
-
+from django.utils.timezone import now
+from django.urls import reverse_lazy, reverse
+from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from django.views.generic import ListView, DetailView, DeleteView
-
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render, redirect
+from django.core.exceptions import ObjectDoesNotExist
+from django.views import View
+from django.views.generic import (
+    ListView,
+    DetailView,
+    DeleteView,
+    CreateView,
+    TemplateView,
+)
 from users.models import User
 from chats.models import ChatRoom, ChatParticipant
 from .forms import ProjectCreateForm, TaskForm
-from .models import Project, Team, TeamMember, History, Comment
-from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView, CreateView
-from django.urls import reverse_lazy
-from django.shortcuts import get_object_or_404, render
-from django.views import View
-from .models import Task
-from django.core.exceptions import ObjectDoesNotExist
-
+from .models import Project, Team, TeamMember, History, Comment, Task
 from .services.history_service import HistoryService
-from django.utils.timezone import now
-from django.urls import reverse
-from django.http import JsonResponse, HttpResponseRedirect
 
 
-class StartView(TemplateView):
+class StartView(LoginRequiredMixin, TemplateView):
     template_name = 'projects/start.html'
 
     def get_context_data(self, **kwargs):
@@ -99,6 +99,25 @@ class JoinProjectView(LoginRequiredMixin, View):
             return JsonResponse({'error': 'Invalid access key.'}, status=404)
 
 
+class LeaveProjectView(LoginRequiredMixin, View):
+    # noinspection PyMethodMayBeStatic
+    def post(self, request, *args, **kwargs):
+        project_id = request.POST.get('project_id') or json.loads(request.body).get('project_id')
+        project = get_object_or_404(Project, id=project_id)
+        user = request.user
+        team = project.team
+
+        try:
+            TeamMember.objects.filter(team=team, user=user).delete()
+            ChatParticipant.objects.filter(id=project.id, user=user.id).delete()
+            messages.success(request, 'You have successfully left the project.')
+            return HttpResponseRedirect(reverse('projects:start'))
+        except Exception as e:
+            print(f"Error leaving project: {e}")
+            messages.error(request, 'There was an error leaving the project. Please try again later.')
+            return redirect('projects:start')
+
+
 class ProjectMainView(LoginRequiredMixin, DetailView):
     model = Project
     template_name = 'projects/main.html'
@@ -112,7 +131,6 @@ class ProjectMainView(LoginRequiredMixin, DetailView):
         tasks = Task.objects.filter(project=project)
         history_items = project.history.all().order_by('timestamp')
         chat_room = ChatRoom.objects.get(project=project)
-        print(chat_room.id)
 
         context['members'] = members
         context['tasks'] = tasks
@@ -124,7 +142,7 @@ class ProjectMainView(LoginRequiredMixin, DetailView):
         return context
 
 
-class ProjectBoardView(View):
+class ProjectBoardView(LoginRequiredMixin, View):
     # noinspection PyMethodMayBeStatic
     def get(self, request, project_id):
         try:
@@ -164,7 +182,7 @@ class ProjectBoardView(View):
         return render(request, 'projects/board.html', context)
 
 
-class TaskCreateView(CreateView):
+class TaskCreateView(LoginRequiredMixin, CreateView):
     model = Task
     form_class = TaskForm
     template_name = 'projects/main.html'
@@ -191,7 +209,7 @@ class TaskCreateView(CreateView):
         return reverse_lazy('projects:main', kwargs={'project_id': project_id})
 
 
-class BacklogView(ListView):
+class BacklogView(LoginRequiredMixin, ListView):
     model = Task
     template_name = 'projects/backlog.html'
     context_object_name = 'tasks'
@@ -230,7 +248,7 @@ class BacklogView(ListView):
         return context
 
 
-class TaskDetailView(DetailView):
+class TaskDetailView(LoginRequiredMixin, DetailView):
     model = Task
 
     def get_object(self, queryset=None):
@@ -298,7 +316,7 @@ class TaskDetailView(DetailView):
         return JsonResponse(task_data)
 
 
-class TaskDeleteView(DeleteView):
+class TaskDeleteView(LoginRequiredMixin, DeleteView):
     model = Task
     pk_url_kwarg = 'task_id'
 
@@ -318,7 +336,7 @@ class TaskDeleteView(DeleteView):
         return JsonResponse({'message': 'Task deleted successfully!', 'task_id': task_id})
 
 
-class TaskUpdateView(View):
+class TaskUpdateView(LoginRequiredMixin, View):
     # noinspection PyMethodMayBeStatic
     def patch(self, request, task_id):
         task = get_object_or_404(Task, id=task_id)
@@ -333,7 +351,6 @@ class TaskUpdateView(View):
         task.description = data.get('description', task.description)
         task.status = data.get('status', task.status)
         task.priority = data.get('priority', task.priority)
-
         user_username = data.get('user')
         if user_username:
             user = get_object_or_404(User, username=user_username)
@@ -352,7 +369,7 @@ class TaskUpdateView(View):
         return JsonResponse({'success': True, 'message': 'Task updated successfully.'})
 
 
-class TimeLogView(View):
+class TimeLogView(LoginRequiredMixin, View):
     # noinspection PyMethodMayBeStatic
     def patch(self, request, task_id):
         task = get_object_or_404(Task, id=task_id)
